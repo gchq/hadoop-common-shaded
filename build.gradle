@@ -9,6 +9,10 @@ apply plugin: 'maven-publish'
 group = 'org.apache.hadoop'
 version = '2.6.4'
 
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.5'
+}
+
 repositories {
     mavenCentral()
     mavenLocal()
