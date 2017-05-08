@@ -9,6 +9,10 @@ apply plugin: 'maven-publish'
 group = 'org.apache.hadoop'
 version = 'v2.6.4'
 
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.5'
+}
+
 repositories {
     mavenCentral()
     mavenLocal()
@@ -41,4 +45,7 @@ publishing {
 shadowJar {
     relocate 'com.sun.jersey', 'shaded.com.sun.jersey'
     relocate 'javax.ws.rs', 'shaded.javax.ws.rs'
+    relocate 'javax.el', 'shaded.javax.el'
+    relocate 'javax.servlet', 'shaded.javax.servlet'
+    relocate 'com.google.common', 'shaded.com.google.common'
 }
