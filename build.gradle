@@ -55,9 +55,11 @@ repositories {
 
 dependencies {
     compile(libs.hadoop_common) {
-        exclude(module: 'slf4j-api')
-        exclude(module: 'slf4j-log4j12')
-        exclude(module: 'log4j')
+        exclude group: "org.slf4j", module: "slf4j-api"
+        exclude group: "org.slf4j", module: "slf4j-log4j12"
+        exclude group: "log4j", module: "log4j"
+        exclude group: "commons-logging", module: "commons-logging"
+        exclude module: 'xercesImpl'
     }
 }
 
@@ -66,21 +68,6 @@ version = versions.hadoopCommonShaded
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-
-//task sourcesJar(type: Jar, dependsOn: classes) {
-    //classifier = 'sources'
-    //from sourceSets.main.allSource
-//}
-
-//task javadocJar(type: Jar, dependsOn: javadoc) {
-    //classifier = 'javadoc'
-    //from javadoc.destinationDir
-//}
-
-//artifacts {
-    //archives sourcesJar
-    //archives javadocJar
-//}
 
 def pomConfig = {
     licenses {
@@ -97,9 +84,6 @@ def pomConfig = {
 
 publishing {
     publications {
-        //mavenJava(MavenPublication) {
-            //from components.java
-        //}
         shadow(MavenPublication) { publication ->
             project.shadow.component(publication)
             // No point in publishing sources/javadocs as these will be empty as the
@@ -112,16 +96,6 @@ publishing {
                 root.children().last() + pomConfig
             }
         }
-        //shadow(MavenPublication) {
-            //from components.shadow
-            //artifact sourcesJar
-            //artifact javadocJar
-            //pom.withXml {
-                //def root = asNode()
-                //root.appendNode('name', project.name)
-                //root.children().last() + pomConfig
-            //}
-        //}
     }
 }
 
@@ -162,36 +136,69 @@ shadowJar {
     //this stops the maven classifier being 'all'. We want the default jar to be the shadow one
     classifier = ''
 
+    def prefix = "stroom.hadoopcommonshaded." 
+
+
+    def relocatePackageWithExclusions = { String pkg, List<String> exclusions ->
+        relocate (pkg, prefix + pkg) {
+            if (exclusions != null) {
+                exclusions.each { 
+                    exclude it
+                }
+            }
+        }
+    }
+
     // method for doing the relocation of a package
-    def relocatePackage = { pkg ->
-        relocate pkg, "stroom.hadoopcommonshaded." + pkg
+    def relocatePackage = { String pkg -> 
+        relocatePackageWithExclusions(pkg, [])
     }
 
     // rename all non hadoop packages to avoid conflicts
     // you can use the following to find the unique packages in the shadow jar
     // unzip -t hadoop-common-shaded-SNAPSHOT-all.jar | sed -r 's#.*: (((\w+)\/)+).*OK#\1#g' | sed 's#.*META-INF.*##g' | uniq | grep -v hadoopcommonshaded
-    relocatePackage 'com'
+    relocatePackageWithExclusions 'com', [
+        'com/sun/security/**']
     relocatePackage 'contribs'
-    relocatePackage 'javax'
+    relocatePackageWithExclusions 'javax', [
+        'javax/xml']
     relocatePackage 'jline'
     relocatePackage 'net'
-    relocatePackage 'org.apache.avro'
-    relocatePackage 'org.apache.common'
-    relocatePackage 'org.apache.curator'
-    relocatePackage 'org.apache.directory'
-    relocatePackage 'org.apache.http'
-    relocatePackage 'org.apache.jasper'
-    relocatePackage 'org.apache.jute'
-    relocatePackage 'org.apache.zookeeper'
-    relocatePackage 'org.codehaus'
-    relocatePackage 'org.htrace'
-    relocatePackage 'org.jboss'
-    relocatePackage 'org.jets3t'
-    relocatePackage 'org.mortbay'
-    relocatePackage 'org.objectweb'
-    relocatePackage 'org.tukaani'
-    relocatePackage 'org.xerial'
-    relocatePackage 'org.znerd'
+    //relocatePackage 'org.apache.avro'
+    relocatePackageWithExclusions 'org', [
+        'org/apache/commons/logging/**', 
+        'org/apache/hadoop/**',
+        'org/w3c/dom/**',
+        'org/xml/**']
+    //relocatePackage 'org.apache.commons.cli'
+    //relocatePackage 'org.apache.commons.math3'
+    //relocatePackage 'org.apache.commons.httpclient'
+    //relocatePackage 'org.apache.commons.codec'
+    //relocatePackage 'org.apache.commons.io'
+    //relocatePackage 'org.apache.commons.net'
+    //relocatePackage 'org.apache.commons.configuration'
+    //relocatePackage 'org.apache.commons.collections'
+    //relocatePackage 'org.apache.commons.el'
+    //relocatePackage 'org.apache.commons.lang'
+    //relocatePackage 'org.apache.commons.compress'
+    //relocatePackage 'org.apache.commons.digester'
+    //relocatePackage 'org.apache.commons.beanutils'
+    //relocatePackage 'org.apache.curator'
+    //relocatePackage 'org.apache.curator'
+    //relocatePackage 'org.apache.directory'
+    //relocatePackage 'org.apache.http'
+    //relocatePackage 'org.apache.jasper'
+    //relocatePackage 'org.apache.jute'
+    //relocatePackage 'org.apache.zookeeper'
+    //relocatePackage 'org.codehaus'
+    //relocatePackage 'org.htrace'
+    //relocatePackage 'org.jboss'
+    //relocatePackage 'org.jets3t'
+    //relocatePackage 'org.mortbay'
+    //relocatePackage 'org.objectweb'
+    //relocatePackage 'org.tukaani'
+    //relocatePackage 'org.xerial'
+    //relocatePackage 'org.znerd'
 }
 
 tasks.build.dependsOn shadowJar
