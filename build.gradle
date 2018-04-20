@@ -55,11 +55,16 @@ repositories {
 
 dependencies {
     compile(libs.hadoop_common) {
+        // Exclude all logging so we can use our own SLF4J/Logback and its bridging pkgs
         exclude group: "org.slf4j", module: "slf4j-api"
         exclude group: "org.slf4j", module: "slf4j-log4j12"
         exclude group: "log4j", module: "log4j"
         exclude group: "commons-logging", module: "commons-logging"
+        // Stop it dragging in any xerces impls that will conflict with ours
         exclude module: 'xercesImpl'
+
+        // we wannt to use the jaxb impl in the jdk
+        exclude group: "com.sun.xml.bind", module: "jaxb-impl"
     }
 }
 
@@ -138,7 +143,6 @@ shadowJar {
 
     def prefix = "stroom.hadoopcommonshaded." 
 
-
     def relocatePackageWithExclusions = { String pkg, List<String> exclusions ->
         relocate (pkg, prefix + pkg) {
             if (exclusions != null) {
@@ -157,48 +161,29 @@ shadowJar {
     // rename all non hadoop packages to avoid conflicts
     // you can use the following to find the unique packages in the shadow jar
     // unzip -t hadoop-common-shaded-SNAPSHOT-all.jar | sed -r 's#.*: (((\w+)\/)+).*OK#\1#g' | sed 's#.*META-INF.*##g' | uniq | grep -v hadoopcommonshaded
-    relocatePackageWithExclusions 'com', [
-        'com/sun/security/**']
+    relocatePackage 'com.google'
+    relocatePackage 'com.istack'
+    relocatePackage 'com.jamesmurty'
+    relocatePackage 'com.jcraft'
+    relocatePackage 'com.sun.activation'
+    relocatePackage 'com.sun.jersey'
+    relocatePackage 'com.sun.research'
+    relocatePackage 'com.sun.xml.bind'
+    relocatePackage 'com.sun.xml.twx2'
+    relocatePackage 'com.thoughtworks'
     relocatePackage 'contribs'
-    relocatePackageWithExclusions 'javax', [
-        'javax/xml']
+    relocatePackage 'javax.ws'
+    relocatePackage 'javax.servlet'
+    relocatePackage 'javax.el'
+    relocatePackage 'javax.annotation'
     relocatePackage 'jline'
     relocatePackage 'net'
-    //relocatePackage 'org.apache.avro'
     relocatePackageWithExclusions 'org', [
         'org/apache/commons/logging/**', 
         'org/apache/hadoop/**',
         'org/w3c/dom/**',
-        'org/xml/**']
-    //relocatePackage 'org.apache.commons.cli'
-    //relocatePackage 'org.apache.commons.math3'
-    //relocatePackage 'org.apache.commons.httpclient'
-    //relocatePackage 'org.apache.commons.codec'
-    //relocatePackage 'org.apache.commons.io'
-    //relocatePackage 'org.apache.commons.net'
-    //relocatePackage 'org.apache.commons.configuration'
-    //relocatePackage 'org.apache.commons.collections'
-    //relocatePackage 'org.apache.commons.el'
-    //relocatePackage 'org.apache.commons.lang'
-    //relocatePackage 'org.apache.commons.compress'
-    //relocatePackage 'org.apache.commons.digester'
-    //relocatePackage 'org.apache.commons.beanutils'
-    //relocatePackage 'org.apache.curator'
-    //relocatePackage 'org.apache.curator'
-    //relocatePackage 'org.apache.directory'
-    //relocatePackage 'org.apache.http'
-    //relocatePackage 'org.apache.jasper'
-    //relocatePackage 'org.apache.jute'
-    //relocatePackage 'org.apache.zookeeper'
-    //relocatePackage 'org.codehaus'
-    //relocatePackage 'org.htrace'
-    //relocatePackage 'org.jboss'
-    //relocatePackage 'org.jets3t'
-    //relocatePackage 'org.mortbay'
-    //relocatePackage 'org.objectweb'
-    //relocatePackage 'org.tukaani'
-    //relocatePackage 'org.xerial'
-    //relocatePackage 'org.znerd'
+        'org/xml/**',
+        'org/slf4j/**']
 }
 
 tasks.build.dependsOn shadowJar
