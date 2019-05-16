@@ -160,7 +160,7 @@ shadowJar {
 
     // rename all non hadoop packages to avoid conflicts
     // you can use the following to find the unique packages in the shadow jar
-    // unzip -t hadoop-common-shaded-SNAPSHOT-all.jar | sed -r 's#.*: (((\w+)\/)+).*OK#\1#g' | sed 's#.*META-INF.*##g' | uniq | grep -v hadoopcommonshaded
+    // unzip -l hadopp-common-shaded | grep -v "META-INF" | grep -P " \d{4}-\d{2}-\d{2} " | cut -c30- | sed -E 's#[^\/]+$##g' | sort | uniq | less
     relocatePackage 'com.google'
     relocatePackage 'com.istack'
     relocatePackage 'com.jamesmurty'
