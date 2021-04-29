@@ -96,7 +96,7 @@ dependencies {
     }
 }
 
-group = 'uk.gov.gchq.hadoop.common'
+group = 'uk.gov.gchq.stroom.hadoop.common'
 version = versions.hadoopCommonShaded
 
 sourceCompatibility = JavaVersion.VERSION_1_8
@@ -145,12 +145,26 @@ void configureSigning(Project project) {
     }
 }
 
+//for java plugin
+//see https://docs.gradle.org/current/userguide/java_plugin.html
+java {
+    //package JavaDoc as part of publication
+    withJavadocJar()
+    //package Sources as part of publication
+    withSourcesJar()
+}
+
 publishing {
     publications {
         shadow(MavenPublication) { publication ->
             project.shadow.component(publication)
-            // No point in publishing sources/javadocs as these will be empty as the
-            // shadow plugin cannot merge dependency sources/javadocs into shadow jars
+
+            // There is little point in publishing sources/javadocs as these will be empty as the
+            // shadow plugin cannot merge dependency sources/javadocs into shadow jars, however
+            // maven central requires it.
+            artifact sourcesJar
+            artifact javadocJar
+
             pom {
                 name = project['name']
                 description = "Shaded version of hadoop-common"
