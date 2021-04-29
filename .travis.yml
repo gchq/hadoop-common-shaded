@@ -1,5 +1,7 @@
 language: java
-jdk: oraclejdk8
+jdk: openjdk8
+dist: xenial # jdk8 not availble on newer distros
+#arch: arm64 # LXD container for fast build
 
 script: ./travis.script.sh
 
