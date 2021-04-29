@@ -23,7 +23,7 @@ if [ -n "$TRAVIS_TAG" ]; then
   # GPG sign the artifacts, publish to nexus then close and release
   # the staging repo to the public nexus repo and on to central
   EXTRA_BUILD_ARGS=(
-    "signShadowaPublication"
+    "signShadowPublication"
     "publishToSonatype"
     "closeSonatypeStagingRepository"
     #"closeAndReleaseSonatypeStagingRepository"
