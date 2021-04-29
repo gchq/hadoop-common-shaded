@@ -3,25 +3,35 @@
 #exit script on any error
 set -e
 
-#Shell Colour constants for use in 'echo -e'
-#e.g.  echo -e "My message ${GREEN}with just this text in green${NC}"
-RED='\033[1;31m'
-GREEN='\033[1;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[1;34m'
-NC='\033[0m' # No Colour 
+# shellcheck disable=SC2034
+{
+  #Shell Colour constants for use in 'echo -e'
+  #e.g.  echo -e "My message ${GREEN}with just this text in green${NC}"
+  RED='\033[1;31m'
+  GREEN='\033[1;32m'
+  YELLOW='\033[1;33m'
+  BLUE='\033[1;34m'
+  NC='\033[0m' # No Colour 
+}
 
+EXTRA_BUILD_ARGS=()
 #establish what version we are building
 if [ -n "$TRAVIS_TAG" ]; then
-    #Tagged commit so use that as our version, e.g. v1.2.3
-    PRODUCT_VERSION="${TRAVIS_TAG}"
+  #Tagged commit so use that as our version, e.g. v1.2.3
+  PRODUCT_VERSION="${TRAVIS_TAG}"
 
-    #upload the maven artefacts to bintray
-    EXTRA_BUILD_ARGS="bintrayUpload"
+  # GPG sign the artifacts, publish to nexus then close and release
+  # the staging repo to the public nexus repo and on to central
+  EXTRA_BUILD_ARGS=(
+    "signShadowaPublication"
+    "publishToSonatype"
+    "closeSonatypeStagingRepository"
+    #"closeAndReleaseSonatypeStagingRepository"
+  )
 else
-    #Non tagged builds are NOT pushed to bintray
-    PRODUCT_VERSION="SNAPSHOT"
-    EXTRA_BUILD_ARGS=""
+  #Non tagged builds are NOT pushed to bintray
+  PRODUCT_VERSION="SNAPSHOT"
+  EXTRA_BUILD_ARGS=()
 fi
 
 #Dump all the travis env vars to the console for debugging
@@ -32,9 +42,9 @@ echo -e "TRAVIS_TAG:          [${GREEN}${TRAVIS_TAG}${NC}]"
 echo -e "TRAVIS_PULL_REQUEST: [${GREEN}${TRAVIS_PULL_REQUEST}${NC}]"
 echo -e "TRAVIS_EVENT_TYPE:   [${GREEN}${TRAVIS_EVENT_TYPE}${NC}]"
 echo -e "PRODUCT_VERSION:     [${GREEN}${PRODUCT_VERSION}${NC}]"
-echo -e "EXTRA_BUILD_ARGS:    [${GREEN}${EXTRA_BUILD_ARGS}${NC}]"
+echo -e "EXTRA_BUILD_ARGS:    [${GREEN}${EXTRA_BUILD_ARGS[*]}${NC}]"
 
 #Do the gradle build
-./gradlew -Pversion=$PRODUCT_VERSION clean build ${EXTRA_BUILD_ARGS}
+./gradlew -Pversion="${PRODUCT_VERSION}" clean build "${EXTRA_BUILD_ARGS[@]}"
 
 exit 0
