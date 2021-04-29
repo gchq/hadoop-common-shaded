@@ -25,8 +25,8 @@ if [ -n "$TRAVIS_TAG" ]; then
   EXTRA_BUILD_ARGS=(
     "signShadowPublication"
     "publishToSonatype"
-    "closeSonatypeStagingRepository"
-    #"closeAndReleaseSonatypeStagingRepository"
+    #"closeSonatypeStagingRepository"
+    "closeAndReleaseSonatypeStagingRepository"
   )
 else
   #Non tagged builds are NOT pushed to bintray
